@@ -21,21 +21,26 @@ class AppAvailability {
   ///   "version_name": ""
   /// }
   static Future<Map<String, String?>?> checkAvailability(String uri) async {
-    Map<String, dynamic> args = <String, dynamic>{};
-    args.putIfAbsent('uri', () => uri);
+    try {
+      Map<String, dynamic> args = <String, dynamic>{};
+      args.putIfAbsent('uri', () => uri);
 
-    if (Platform.isAndroid) {
-      Map<dynamic, dynamic> app = await _channel.invokeMethod("checkAvailability", args);
-      return {"app_name": app["app_name"], "package_name": app["package_name"], "versionCode": app["versionCode"], "version_name": app["version_name"]};
-    } else if (Platform.isIOS) {
-      bool appAvailable = await _channel.invokeMethod("checkAvailability", args);
-      if (!appAvailable) {
-        throw PlatformException(code: "", message: "App not found $uri");
+      if (Platform.isAndroid) {
+        Map<dynamic, dynamic> app = await _channel.invokeMethod("checkAvailability", args);
+        return {"app_name": app["app_name"], "package_name": app["package_name"], "versionCode": app["versionCode"], "version_name": app["version_name"]};
+      } else if (Platform.isIOS) {
+        bool appAvailable = await _channel.invokeMethod("checkAvailability", args);
+        if (!appAvailable) {
+          throw PlatformException(code: "", message: "App not found $uri");
+        }
+        return {"app_name": "", "package_name": uri, "versionCode": "", "version_name": ""};
       }
-      return {"app_name": "", "package_name": uri, "versionCode": "", "version_name": ""};
-    }
 
-    return null;
+      return null;
+    } catch (e) {
+      print(e);
+      return null;
+    }
   }
 
   /// Only for **Android**.
